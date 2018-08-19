@@ -8,91 +8,99 @@ const { DATABASE_ERROR_CODE, PAYBACK_AMOUNT } = rootRequire('constants')
      */
 class Customer {
     constructor(customerId) {
-            assert(customerId, 'customerId of customer is required')
-            this._customerID = customerId;
-        }
-        /**
-         * Create the customer
-         * Give the payback to referring customer if referr is given
-         * @param {*} customer 
-         */
-    static async create(customer = {}) {
-            this.validateNewCustomer(customer)
-            try {
-                if (customer.referral) await this.validateCustomerID(customer.referral)
-                this.customer = await CustomerDAO.save(customer)
-                if (customer.referral) this.givePayBack(customer.referral).then(res => logger.info(`payback given for customer ${this.customer.customerId}`)).catch(err => logger.error(err))
-                return this.customer;
-            } catch (err) {
-                switch (err.code) {
-                    case DATABASE_ERROR_CODE.DUPLICATE:
-                        throw Boom.conflict(`customer already exists with email ${customer.email}`)
-                    default:
-                        throw err
-                }
-            }
+        assert(customerId, 'customerId of customer is required')
+        this._customerID = customerId;
+    }
 
+    /**
+     * Create the customer
+     * Give the payback to referring customer if referr is given
+     * @param {*} customer 
+     */
+    static async create(customer = {}) {
+        this.validateNewCustomer(customer)
+        try {
+            if (customer.referral) await this.validateCustomerID(customer.referral)
+            this.customer = await CustomerDAO.save(customer)
+            if (customer.referral) this.givePayBack(customer.referral).then(res => logger.info(`payback given for customer ${this.customer.customerId}`)).catch(err => logger.error(err))
+            return this.customer;
+        } catch (err) {
+            switch (err.code) {
+                case DATABASE_ERROR_CODE.DUPLICATE:
+                    throw Boom.conflict(`customer already exists with email ${customer.email}`)
+                default:
+                    throw err
+            }
         }
-        /**
-         * Get the customer details by customer id
-         * throw error if customer details not found with given customer id
-         * @param {*} customerID 
-         */
+
+    }
+
+    /**
+     * Get the customer details by customer id
+     * throw error if customer details not found with given customer id
+     * @param {*} customerID 
+     */
     static async get(customerID) {
-            Joi.assert(customerID, Joi.number().label('customerID'))
-            const customer = await CustomerDAO.findOne({ baseQuery: { customerId: customerID } })
-            if (!customer) throw Boom.notFound(`no customer found with ${customerID}`)
-            return customer
-        }
-        /**
-         * Check if given customer exists
-         * @param {*} customerID 
-         */
+        Joi.assert(customerID, Joi.number().label('customerID'))
+        const customer = await CustomerDAO.findOne({ baseQuery: { customerId: customerID } })
+        if (!customer) throw Boom.notFound(`no customer found with ${customerID}`)
+        return customer
+    }
+
+    /**
+     * Check if given customer exists
+     * @param {*} customerID 
+     */
     static async isExists(customerID) {
-            return !!await this.get(customerID)
-        }
-        /**
-         * Wrapper for the get method
-         * @param {*} customerID 
-         */
+        return !!await this.get(customerID)
+    }
+
+    /**
+     * Wrapper for the get method
+     * @param {*} customerID 
+     */
     static async validateCustomerID(customerID) {
-            return this.get(customerID)
-        }
-        /**
-         * Check if the given customer is an ambassdaor
-         * @param {*} customerID 
-         */
+        return this.get(customerID)
+    }
+
+    /**
+     * Check if the given customer is an ambassdaor
+     * @param {*} customerID 
+     */
     static async isAmbassador(customerID) {
-            const customer = await this.get(customerID);
-            return customer.isAmbassador;
-        }
-        /**
-         * Add the referral - update the referral field of customer schema
-         * @param {*} param0 
-         */
+        const customer = await this.get(customerID);
+        return customer.isAmbassador;
+    }
+
+    /**
+     * Add the referral - update the referral field of customer schema
+     * @param {*} param0 
+     */
     static async addReferral({ customerID, referral }) {
-            Joi.assert({ customerID, referral }, Joi.object().options({ abortEarly: false }).keys({
-                customerID: Joi.number().required().label('customerID'),
-                referral: Joi.number().required().label('referral')
-            }))
-            const customer = await this.get(customerID);
-            if (customer.referral) throw Boom.badData(`customer ${customerID} already refferd by ${customer.referral}`)
-            await CustomerDAO.findOneAndUpdate({ customerId: customerID }, { referral: referral })
-            this.givePayBack(referral).then(res => logger.info(`payback given for customer ${customerID}`)).catch(err => logger.error(err))
-            return true;
-        }
-        /**
-         * Get the all children of the customer by customer id
-         * @param {*} customerID 
-         */
+        Joi.assert({ customerID, referral }, Joi.object().options({ abortEarly: false }).keys({
+            customerID: Joi.number().required().label('customerID'),
+            referral: Joi.number().required().label('referral')
+        }))
+        const customer = await this.get(customerID);
+        if (customer.referral) throw Boom.badData(`customer ${customerID} already refferd by ${customer.referral}`)
+        await CustomerDAO.findOneAndUpdate({ customerId: customerID }, { referral: referral })
+        this.givePayBack(referral).then(res => logger.info(`payback given for customer ${customerID}`)).catch(err => logger.error(err))
+        return true;
+    }
+
+    /**
+     * Get the all children of the customer by customer id
+     * @param {*} customerID 
+     */
     static async getChildrens(customerID) {
-            await this.validateCustomerID(customerID)
-            return await CustomerDAO.find({ baseQuery: { referral: customerID } })
-        }
-        /**
-         * Get children of a customer at nth level
-         * @param {*} param0 
-         */
+        await this.validateCustomerID(customerID)
+        return await CustomerDAO.find({ baseQuery: { referral: customerID } })
+    }
+
+    /**
+     * Get children of a customer at nth level
+     * @param {*} param0 
+     */
     static async getChildrenAtNthLevel({ customerID, level }) {
         Joi.assert({ customerID, level }, Joi.object().options({ abortEarly: false }).keys({
             customerID: Joi.number(),
