@@ -1,0 +1,45 @@
+{
+    "name": "customer-referral-program",
+    "version": "1.0.0",
+    "description": "Customer Referral Program",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js"
+    },
+    "keywords": [
+        "customer",
+        "referral"
+    ],
+    "author": "Amol Kamble",
+    "license": "-",
+    "dependencies": {
+        "bluebird": "^3.5.0",
+        "body-parser": "^1.17.2",
+        "boom": "^7.2.0",
+        "cors": "^2.8.4",
+        "cron": "^1.2.1",
+        "crypto": "^1.0.1",
+        "dotenv": "^4.0.0",
+        "express": "^4.15.3",
+        "joi": "^10.6.0",
+        "lodash": "^4.17.4",
+        "moment": "^2.19.1",
+        "mongoose": "^4.11.5",
+        "mongoose-auto-increment": "^5.0.1",
+        "morgan": "^1.8.2",
+        "pino": "^4.7.2",
+        "request": "^2.81.0",
+        "request-promise": "^4.2.1",
+        "shortid": "^2.2.8",
+        "underscore": "^1.8.3",
+        "uuid": "^3.2.1",
+        "winston": "^2.3.1"
+    },
+    "devDependencies": {
+        "nodemon": "^1.11.0"
+    },
+    "engines": {
+        "node": ">=6.9.5"
+    }
+}
