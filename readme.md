@@ -88,7 +88,7 @@ https://www.getpostman.com/collections/4fcc58968458c3db17e9
 ```
 &nbsp;
 ***
-#### 2. Get teh customr by customer id
+#### 2. Get the customer by customer id
     GET {{uri}}/customer/:customerId
 ***
 
